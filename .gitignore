@@ -1,0 +1,10 @@
+models/*.pt
+schedules/*.pkl
+*.pdb
+*.trb
+*.pyc
+__pycache__/
+outputs/
+test_outputs/
+ui_outputs/
+.DS_Store
