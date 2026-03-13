@@ -12,10 +12,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String       @id @default(cuid())
+  email         String?      @unique
+  passwordHash  String?
+  name          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  generations   Generation[]
+}
+
 model Generation {
   id        String   @id @default(uuid())
   length    Int
   pdbUrl    String?
   status    String   @default("PENDING") // PENDING, SUCCESS, FAILED
   createdAt DateTime @default(now())
+  
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }

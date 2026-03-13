@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
+import { put } from '@vercel/blob';
 
 export async function POST(req: Request) {
   try {
@@ -9,6 +11,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid protein length' }, { status: 400 });
     }
 
+    const session = await auth();
+
     // Attempt to save request to database with PENDING status
     let generationRecord;
     try {
@@ -16,6 +20,7 @@ export async function POST(req: Request) {
         data: {
           length,
           status: 'PENDING',
+          ...(session?.user?.id ? { userId: session.user.id } : {}),
         },
       });
     } catch {
@@ -48,17 +53,35 @@ export async function POST(req: Request) {
 
     const result = await response.json();
     
-    // Result typically contains [statusText, viewerHtml] based on the Gradio app.py
-    const outputData = result.data; 
+    // Result typically contains [statusText, pdbDataString] based on the Gradio app.py
+    const [statusText, pdbData] = result.data || []; 
+    
+    let blobUrl = null;
+
+    if (pdbData && process.env.BLOB_READ_WRITE_TOKEN) {
+        try {
+            const blob = await put(`pdb/generation_${generationRecord?.id || Date.now()}.pdb`, pdbData, {
+                access: 'public',
+                contentType: 'text/plain',
+            });
+            blobUrl = blob.url;
+        } catch (error) {
+            console.error("Failed to upload to Vercel Blob:", error);
+        }
+    }
 
     if(generationRecord) {
         await prisma.generation.update({
             where: { id: generationRecord.id },
-            data: { status: 'SUCCESS' }
+            data: { 
+                status: 'SUCCESS',
+                ...(blobUrl ? { pdbUrl: blobUrl } : {})
+            }
         });
     }
 
-    return NextResponse.json({ success: true, result: outputData });
+    // We still return the pdbData to the frontend for immediate rendering
+    return NextResponse.json({ success: true, result: [statusText, pdbData] });
 
   } catch (error: unknown) {
     console.error(error);
