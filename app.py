@@ -24,43 +24,11 @@ def generate_protein(length):
     pdb_file = f"{output_prefix}_0.pdb"
 
     if os.path.exists(pdb_file):
-        viewer_html = render_3d(pdb_file)
-        return "Done", viewer_html
+        with open(pdb_file, "r") as f:
+            pdb_data = f.read()
+        return "Done", pdb_data
     else:
-        return "Generation failed\n" + result.stderr, ""
-
-
-def render_3d(pdb_path):
-    with open(pdb_path, "r") as f:
-        pdb_data = f.read()
-
-    viewer_id = uuid.uuid4().hex
-    viewer_file = f"static/viewer_{viewer_id}.html"
-
-    html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-<script src="https://3dmol.org/build/3Dmol-min.js"></script>
-</head>
-<body style="margin:0; background:black;">
-<div id="viewer" style="width:100%; height:500px;"></div>
-<script>
-let viewer = $3Dmol.createViewer("viewer", {{ backgroundColor: "black" }});
-let pdbData = `{pdb_data.replace("`", "")}`;
-viewer.addModel(pdbData, "pdb");
-viewer.setStyle({{}}, {{cartoon: {{color: "spectrum"}}}});
-viewer.zoomTo();
-viewer.render();
-</script>
-</body>
-</html>
-"""
-
-    with open(viewer_file, "w") as f:
-        f.write(html_content)
-
-    return f'<iframe src="/file={viewer_file}" width="100%" height="520px" frameborder="0"></iframe>'
+        return f"Generation failed\n{result.stderr}", ""
 
 
 with gr.Blocks() as demo:
@@ -70,12 +38,13 @@ with gr.Blocks() as demo:
     generate_btn = gr.Button("Generate")
 
     status = gr.Textbox(label="Status")
-    viewer = gr.HTML()
+    viewer_data = gr.Textbox(label="PDB Data (Hidden for API)", visible=False)
 
     generate_btn.click(
         generate_protein,
         inputs=length,
-        outputs=[status, viewer],
+        outputs=[status, viewer_data],
+        api_name="predict"
     )
 
 demo.launch(server_name="0.0.0.0", server_port=7860)
