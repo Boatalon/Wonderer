@@ -164,14 +164,12 @@ class Sampler:
         self.allatom = ComputeAllAtomCoords().to(self.device)
 
         if self.inf_conf.input_pdb is None:
-            # set default pdb
-            script_dir = os.path.dirname(os.path.realpath(__file__))
-            self.inf_conf.input_pdb = os.path.join(
-                script_dir, "../../examples/input_pdbs/1qys.pdb"
+            # We are generating unconditionally; no input pdb provided
+            self.target_feats = None
+        else:
+            self.target_feats = iu.process_target(
+                self.inf_conf.input_pdb, parse_hetatom=True, center=False
             )
-        self.target_feats = iu.process_target(
-            self.inf_conf.input_pdb, parse_hetatom=True, center=False
-        )
         self.chain_idx = None
         self.idx_pdb = None
 
