@@ -4,6 +4,8 @@ import { auth } from '@/auth';
 import { put } from '@vercel/blob';
 import { Client } from '@gradio/client';
 
+export const maxDuration = 60; // Set timeout to 60 seconds (Vercel maximum for standard Pro)
+
 export async function POST(req: Request) {
   try {
     const { length } = await req.json();
