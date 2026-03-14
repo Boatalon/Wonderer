@@ -164,8 +164,8 @@ class Sampler:
         self.allatom = ComputeAllAtomCoords().to(self.device)
 
         if self.inf_conf.input_pdb is None:
-            # We are generating unconditionally; no input pdb provided
-            self.target_feats = None
+            # We are generating unconditionally; provide a small dummy target so logic doesn't crash
+            self.target_feats = self._get_dummy_target_feats()
         else:
             self.target_feats = iu.process_target(
                 self.inf_conf.input_pdb, parse_hetatom=True, center=False
@@ -182,6 +182,16 @@ class Sampler:
             self.t_step_input = int(self.diffuser_conf.partial_T)
         else:
             self.t_step_input = int(self.diffuser_conf.T)
+
+    def _get_dummy_target_feats(self, L=1):
+        return {
+            "xyz_27": torch.full((L, 27, 3), np.nan).to(self.device).float(),
+            "mask_27": torch.full((L, 27), False).to(self.device),
+            "seq": torch.full((L,), 20).to(self.device).long(),
+            "pdb_idx": [('A', i+1) for i in range(L)],
+            "xyz_het": np.zeros((0, 3)),
+            "info_het": []
+        }
 
     @property
     def T(self):
@@ -304,7 +314,7 @@ class Sampler:
         #######################
 
         if self.inf_conf.input_pdb is None:
-            self.target_feats = None
+            self.target_feats = self._get_dummy_target_feats()
         else:
             self.target_feats = iu.process_target(
                 self.inf_conf.input_pdb, parse_hetatom=True, center=False
