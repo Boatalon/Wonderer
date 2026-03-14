@@ -303,9 +303,12 @@ class Sampler:
         ### Parse input pdb ###
         #######################
 
-        self.target_feats = iu.process_target(
-            self.inf_conf.input_pdb, parse_hetatom=True, center=False
-        )
+        if self.inf_conf.input_pdb is None:
+            self.target_feats = None
+        else:
+            self.target_feats = iu.process_target(
+                self.inf_conf.input_pdb, parse_hetatom=True, center=False
+            )
 
         ################################
         ### Generate specific contig ###
