@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { sendOtpEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
   try {
@@ -18,21 +19,53 @@ export async function POST(req: Request) {
       where: { email },
     });
 
-    if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
+    if (existingUser && existingUser.emailVerified) {
+      return NextResponse.json({ error: 'User already exists and is verified. Please login.' }, { status: 400 });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: {
+        name,
+        passwordHash,
+      },
+      create: {
         name,
         email,
         passwordHash,
       },
     });
 
-    return NextResponse.json({ user: { id: user.id, email: user.email, name: user.name } });
+    // Generate 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    await prisma.otp.upsert({
+      where: { email },
+      update: {
+        otp: otpCode,
+        expiresAt,
+      },
+      create: {
+        email,
+        otp: otpCode,
+        expiresAt,
+      },
+    });
+
+    try {
+      if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+        await sendOtpEmail(email, otpCode);
+      } else {
+        console.warn(`[DEV] SMTP not configured. OTP for ${email} is: ${otpCode}`);
+      }
+    } catch (emailErr) {
+      console.error("Failed to send OTP email:", emailErr);
+    }
+
+    return NextResponse.json({ message: 'OTP sent to email', email: user.email, verifyPending: true });
   } catch (error: unknown) {
     console.error(error);
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';

@@ -30,7 +30,7 @@ export default function RegisterPage() {
         setError(data.error || 'Registration failed');
         setLoading(false);
       } else {
-        router.push('/login');
+        router.push(`/verify?email=${encodeURIComponent(email)}`);
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -67,7 +67,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all font-mono text-sm"
-              placeholder="you@example.com"
+              placeholder="you@ku.th"
             />
           </div>
           <div className="flex flex-col gap-1">
