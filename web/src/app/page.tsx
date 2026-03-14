@@ -11,12 +11,14 @@ export default function Home() {
   const [length, setLength] = useState<number>(150);
   const [status, setStatus] = useState<string>('');
   const [pdbData, setPdbData] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleGenerate = async () => {
     setLoading(true);
     setStatus('Initializing generation...');
     setPdbData(null);
+    setBlobUrl(null);
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -34,6 +36,9 @@ export default function Home() {
         setStatus(hfStatus || 'Completed successfully!');
         if (hfPdbData) {
           setPdbData(hfPdbData);
+        }
+        if (data.blobUrl) {
+          setBlobUrl(data.blobUrl);
         }
       }
     } catch (err: unknown) {
@@ -90,8 +95,18 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="mt-6 p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-sm font-mono text-cyan-400">
-             Status: {status || 'Idle'}
+          <div className="mt-6 p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-sm font-mono text-cyan-400 flex justify-between items-center">
+             <span>Status: {status || 'Idle'}</span>
+             {blobUrl && (
+               <a 
+                 href={blobUrl} 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="text-emerald-400 hover:text-emerald-300 underline"
+               >
+                 Download PDB
+               </a>
+             )}
           </div>
         </section>
 
@@ -102,5 +117,6 @@ export default function Home() {
         )}
       </main>
     </div>
+
   );
 }
