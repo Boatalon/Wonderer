@@ -10,6 +10,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
+    if (!email.toLowerCase().endsWith('@ku.th')) {
+      return NextResponse.json({ error: 'Registration is restricted to @ku.th email addresses only.' }, { status: 403 });
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
