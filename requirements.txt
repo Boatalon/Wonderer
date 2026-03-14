@@ -1,6 +1,6 @@
 huggingface-hub==0.26.2
-torch
-torchmetrics
+torch<2.6.0
+torchmetrics<1.4.0
 dgl<2.0.0
 e3nn==0.3.3
 wandb==0.12.0
