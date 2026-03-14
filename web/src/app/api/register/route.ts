@@ -55,6 +55,7 @@ export async function POST(req: Request) {
       },
     });
 
+    try {
       if (process.env.SMTP_HOST && process.env.SMTP_USER) {
         await sendOtpEmail(email, otpCode);
       } else {
@@ -62,8 +63,19 @@ export async function POST(req: Request) {
         console.log(`[AUTH] OTP for ${email} is: ${otpCode}`);
         console.log("========================================");
       }
+    } catch (emailErr: any) {
+      console.error("SMTP Error:", emailErr.message);
+      console.log("========================================");
+      console.log(`[AUTH-FALLBACK] OTP for ${email} is: ${otpCode}`);
+      console.log("========================================");
+      // We don't throw here, so the user can still proceed if they check logs
+    }
 
-    return NextResponse.json({ message: 'OTP sent to email', email: user.email, verifyPending: true });
+    return NextResponse.json({ 
+      message: 'Registration initiated. Please check your email (or server logs if SMTP fails).', 
+      email: user.email, 
+      verifyPending: true 
+    });
   } catch (error: unknown) {
     console.error(error);
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
