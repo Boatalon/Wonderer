@@ -14,4 +14,3 @@ scipy
 opt_einsum
 omegaconf
 pytorch-lightning
-./env/SE3Transformer

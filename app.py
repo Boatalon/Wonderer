@@ -19,7 +19,10 @@ def generate_protein(length):
         "inference.num_designs=1",
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    env = os.environ.copy()
+    env["PYTHONPATH"] = f"{os.getcwd()}:{os.getcwd()}/env/SE3Transformer:{env.get('PYTHONPATH', '')}"
+    
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
 
     pdb_file = f"{output_prefix}_0.pdb"
 
