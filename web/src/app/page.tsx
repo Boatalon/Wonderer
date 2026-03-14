@@ -111,7 +111,7 @@ export default function Home() {
         </section>
 
         {pdbData && (
-           <section className="w-full rounded-3xl overflow-hidden border border-neutral-800 shadow-[0_0_40px_-10px_rgba(6,182,212,0.2)] bg-neutral-900 flex justify-center items-center min-h-[500px]">
+           <section className="relative w-full rounded-3xl overflow-hidden border border-neutral-800 shadow-[0_0_40px_-10px_rgba(6,182,212,0.2)] bg-neutral-900 flex justify-center items-center min-h-[500px]">
              <ProteinViewer pdbData={pdbData} />
            </section>
         )}

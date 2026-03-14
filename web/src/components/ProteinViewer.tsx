@@ -53,7 +53,7 @@ export default function ProteinViewer({ pdbData }: ViewerProps) {
   return (
     <div 
         ref={viewerRef} 
-        className="w-full h-full min-h-[500px] rounded-2xl overflow-hidden" 
+        className="relative w-full h-[500px] rounded-2xl overflow-hidden" 
     />
   );
 }
