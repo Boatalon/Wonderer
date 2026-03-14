@@ -55,15 +55,13 @@ export async function POST(req: Request) {
       },
     });
 
-    try {
       if (process.env.SMTP_HOST && process.env.SMTP_USER) {
         await sendOtpEmail(email, otpCode);
       } else {
-        console.warn(`[DEV] SMTP not configured. OTP for ${email} is: ${otpCode}`);
+        console.log("========================================");
+        console.log(`[AUTH] OTP for ${email} is: ${otpCode}`);
+        console.log("========================================");
       }
-    } catch (emailErr) {
-      console.error("Failed to send OTP email:", emailErr);
-    }
 
     return NextResponse.json({ message: 'OTP sent to email', email: user.email, verifyPending: true });
   } catch (error: unknown) {
