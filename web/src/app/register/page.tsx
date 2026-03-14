@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -17,11 +19,23 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ 
+          firstName, 
+          lastName, 
+          email, 
+          password, 
+          confirmPassword 
+        }),
       });
       
       const data = await res.json();
@@ -48,17 +62,31 @@ export default function RegisterPage() {
         {error && <div className="bg-red-950/50 border border-red-900 text-red-400 p-3 rounded-xl mb-4 text-sm text-center">{error}</div>}
         
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-neutral-400">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all font-mono text-sm"
-              placeholder="John Doe"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-neutral-400">First Name</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all font-mono text-sm"
+                placeholder="John"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-neutral-400">Last Name</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all font-mono text-sm"
+                placeholder="Doe"
+              />
+            </div>
           </div>
+          
           <div className="flex flex-col gap-1">
             <label className="text-sm text-neutral-400">Email</label>
             <input
@@ -70,12 +98,25 @@ export default function RegisterPage() {
               placeholder="you@ku.th"
             />
           </div>
+
           <div className="flex flex-col gap-1">
             <label className="text-sm text-neutral-400">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all font-mono text-sm"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-neutral-400">Confirm Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               className="bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all font-mono text-sm"
               placeholder="••••••••"

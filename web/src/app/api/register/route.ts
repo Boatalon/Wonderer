@@ -5,10 +5,14 @@ import { sendOtpEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const { firstName, lastName, email, password, confirmPassword } = await req.json();
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+    if (!email || !password || !firstName || !lastName) {
+      return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+    }
+
+    if (password !== confirmPassword) {
+      return NextResponse.json({ error: 'Passwords do not match' }, { status: 400 });
     }
 
     if (!email.toLowerCase().endsWith('@ku.th')) {
@@ -24,15 +28,20 @@ export async function POST(req: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const fullName = `${firstName} ${lastName}`;
 
     const user = await prisma.user.upsert({
       where: { email },
       update: {
-        name,
+        name: fullName,
+        firstName,
+        lastName,
         passwordHash,
       },
       create: {
-        name,
+        name: fullName,
+        firstName,
+        lastName,
         email,
         passwordHash,
       },

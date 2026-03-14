@@ -10,30 +10,33 @@ export default async function Header() {
         Wonderer
       </Link>
       
-      <nav className="flex items-center gap-4">
+      <nav className="flex items-center gap-6">
         {session?.user ? (
-          <>
-            <span className="text-sm text-neutral-400">
-              Welcome, {session.user.name || session.user.email}
-            </span>
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-end">
+              <span className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Logged in as</span>
+              <span className="text-sm font-semibold text-neutral-200">
+                {(session.user as any).firstName || session.user.name || session.user.email} {(session.user as any).lastName || ''}
+              </span>
+            </div>
             <form action={async () => {
               'use server';
               await signOut();
             }}>
-              <button className="text-sm text-red-400 hover:text-red-300 transition-colors">
+              <button className="px-3 py-1.5 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-all border border-red-500/20">
                 Sign Out
               </button>
             </form>
-          </>
+          </div>
         ) : (
-          <>
-            <Link href="/login" className="text-sm text-neutral-300 hover:text-white transition-colors">
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-sm text-neutral-400 hover:text-white transition-colors">
               Login
             </Link>
-            <Link href="/register" className="text-sm px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-white transition-colors">
+            <Link href="/register" className="text-sm px-5 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 rounded-xl text-white font-medium transition-all shadow-lg shadow-cyan-500/10">
               Register
             </Link>
-          </>
+          </div>
         )}
       </nav>
     </header>
