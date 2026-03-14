@@ -8,6 +8,7 @@ os.makedirs("ui_outputs", exist_ok=True)
 
 
 def generate_protein(length):
+    print(f"Generating protein with length: {length}")
     output_prefix = f"ui_outputs/test_{uuid.uuid4().hex[:6]}"
     contig = f"[{int(length)}-{int(length)}]"
 
@@ -22,6 +23,7 @@ def generate_protein(length):
     env = os.environ.copy()
     env["PYTHONPATH"] = f"{os.getcwd()}:{os.getcwd()}/env/SE3Transformer:{env.get('PYTHONPATH', '')}"
     
+    print(f"Running command: {' '.join(cmd)}")
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
 
     pdb_file = f"{output_prefix}_0.pdb"
@@ -29,8 +31,10 @@ def generate_protein(length):
     if os.path.exists(pdb_file):
         with open(pdb_file, "r") as f:
             pdb_data = f.read()
+        print("Generation successful")
         return "Done", pdb_data
     else:
+        print(f"Generation failed: {result.stderr}")
         return f"Generation failed\n{result.stderr}", ""
 
 
@@ -50,4 +54,5 @@ with gr.Blocks() as demo:
         api_name="predict"
     )
 
-demo.launch(server_name="0.0.0.0", server_port=7860)
+if __name__ == "__main__":
+    demo.queue().launch(server_name="0.0.0.0", server_port=7860, show_api=True)

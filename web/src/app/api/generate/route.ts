@@ -29,8 +29,8 @@ export async function POST(req: Request) {
     }
 
     // Call Hugging Face API
-    const hfSpaceUrl = process.env.HF_SPACE_URL;
-    console.log(`Using HF_SPACE_URL: ${hfSpaceUrl}`);
+    const hfSpaceUrl = process.env.HF_SPACE_URL?.trim();
+    console.log(`Connecting to Hugging Face Space: "${hfSpaceUrl}"`);
     
     if (!hfSpaceUrl) {
       console.error('HF_SPACE_URL is not configured');
@@ -40,17 +40,19 @@ export async function POST(req: Request) {
     // Basic URL validation to prevent "String did not match expected pattern"
     try {
       new URL(hfSpaceUrl);
-    } catch (e) {
-      console.error(`Invalid HF_SPACE_URL: ${hfSpaceUrl}`);
-      return NextResponse.json({ error: `Invalid HF_SPACE_URL configured: ${hfSpaceUrl}` }, { status: 500 });
+    } catch (e: any) {
+      console.error(`Invalid HF_SPACE_URL pattern: "${hfSpaceUrl}" - Error: ${e.message}`);
+      return NextResponse.json({ error: `Invalid HF_SPACE_URL configured: ${hfSpaceUrl}. Ensure it starts with https://` }, { status: 500 });
     }
 
     // Using @gradio/client
     let client;
     try {
+      console.log("Attempting Gradio Client.connect...");
       client = await Client.connect(hfSpaceUrl);
+      console.log("Gradio Client connected successfully.");
     } catch (error: any) {
-      console.error("Gradio Connection Error:", error);
+      console.error("Gradio Connection Error details:", error);
       return NextResponse.json({ error: `Hugging Face Connection Failed: ${error.message}` }, { status: 500 });
     }
 
