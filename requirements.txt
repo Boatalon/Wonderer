@@ -1,5 +1,6 @@
 huggingface-hub==0.26.2
 torch
+torchdata
 dgl
 e3nn
 wandb
