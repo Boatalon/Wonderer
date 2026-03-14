@@ -1,1 +1,10 @@
 huggingface-hub==0.26.2
+torch
+dgl
+e3nn
+wandb
+pynvml
+decorator==5.1.0
+hydra-core==1.3.2
+pyrsistent==0.19.3
+git+https://github.com/NVIDIA/dllogger.git#egg=dllogger
