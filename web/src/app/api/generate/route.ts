@@ -29,7 +29,12 @@ export async function POST(req: Request) {
     }
 
     // Call Hugging Face API
-    const hfSpaceUrl = process.env.HF_SPACE_URL?.trim();
+    let hfSpaceUrl = process.env.HF_SPACE_URL?.trim();
+    // Strip potential literal quotes from Vercel env vars
+    if (hfSpaceUrl?.startsWith('"') && hfSpaceUrl?.endsWith('"')) {
+      hfSpaceUrl = hfSpaceUrl.substring(1, hfSpaceUrl.length - 1);
+    }
+    
     console.log(`Connecting to Hugging Face Space: "${hfSpaceUrl}"`);
     
     if (!hfSpaceUrl) {
@@ -42,7 +47,9 @@ export async function POST(req: Request) {
       new URL(hfSpaceUrl);
     } catch (e: any) {
       console.error(`Invalid HF_SPACE_URL pattern: "${hfSpaceUrl}" - Error: ${e.message}`);
-      return NextResponse.json({ error: `Invalid HF_SPACE_URL configured: ${hfSpaceUrl}. Ensure it starts with https://` }, { status: 500 });
+      return NextResponse.json({ 
+        error: `Invalid HF_SPACE_URL configured: "${hfSpaceUrl}". Ensure it starts with https:// and check for accidental quotes.` 
+      }, { status: 500 });
     }
 
     // Using @gradio/client
