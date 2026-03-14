@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { put } from '@vercel/blob';
+import { Client } from '@gradio/client';
 
 export async function POST(req: Request) {
   try {
@@ -27,34 +28,29 @@ export async function POST(req: Request) {
       console.warn("Database connection might be unavailable. Proceeding without DB.");
     }
 
-    // Call Hugging Face API (assumes the model is hosted there via Gradio Spaces)
+    // Call Hugging Face API
     const hfSpaceUrl = process.env.HF_SPACE_URL;
     if (!hfSpaceUrl) {
       return NextResponse.json({ error: 'HF_SPACE_URL is not configured' }, { status: 500 });
     }
 
-    const response = await fetch(`${hfSpaceUrl}/api/predict`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data: [length],
-      }),
-    });
+    // Using @gradio/client
+    const client = await Client.connect(hfSpaceUrl);
+    const result = await client.predict("/predict", { 
+        length: length, 
+    }) as any;
 
-    if (!response.ok) {
+    const [statusText, pdbData] = result.data || []; 
+    
+    if (statusText && statusText.includes('failed')) {
         if(generationRecord) {
             await prisma.generation.update({
                 where: { id: generationRecord.id },
                 data: { status: 'FAILED' }
             });
         }
-      throw new Error(`Hugging Face API returned error: ${response.statusText}`);
+        throw new Error(statusText);
     }
-
-    const result = await response.json();
-    
-    // Result typically contains [statusText, pdbDataString] based on the Gradio app.py
-    const [statusText, pdbData] = result.data || []; 
     
     let blobUrl = null;
 
